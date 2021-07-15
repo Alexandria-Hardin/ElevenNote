@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using ElevenNote.Data;
 using ElevenNote.Models;
 using ElevenNote.Services;
 using Microsoft.AspNet.Identity;
@@ -18,6 +19,33 @@ namespace ElevenNote.WebAPI.Controllers
             NoteService noteService = CreateNoteService();
             var notes = noteService.GetNotes();
             return Ok(notes);
+        }
+
+        public NoteDetail GetNoteById(int id)
+        {
+            using (var ctx = new ApplicationDbContext())
+            {
+                var entity =
+                    ctx
+                    .Notes
+                    .Single(e => e.NoteId == id && e.OwnerId == _userId);
+                return
+                    new NoteDetail
+                    {
+                        NoteID = entity.NoteId,
+                        Title = entity.Title,
+                        Content = entity.Content,
+                        CreatedUtc = entity.CreatedUtc,
+                        ModifiedUtc = entity.ModifiedUtc
+                    };
+            }
+        }
+
+        public IHttpActionResult Get(int id)
+        {
+            NoteService noteService = CreateNoteService();
+            var note = noteService.GetNoteById(id);
+            return Ok(note);
         }
         public IHttpActionResult Post(NoteCreate note)
         {
